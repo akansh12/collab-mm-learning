@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data (large binary files / symlinks — configure via configs)
+data/
+experiments/
+
+# Claude Code
+CLAUDE.md
+PLAN.md
+reviews.md
+\[TMLR 2026] Unpaired Multimodal Learning/
+logs/
+
+#TODO: Remove them after we are done
+data_creation/
+analysis/

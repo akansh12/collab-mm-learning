@@ -1,0 +1,38 @@
+# EuroSAT S1-RGB | centralized joint | S1 + RGB
+dataset: eurosat
+training: joint
+data_root: data/eurosat
+
+model_name: eurosat_joint_s1_rgb
+wandb_project: collab-mm-learning
+use_wandb: false
+
+modality: [s1, rgb]
+num_classes: 10
+per_class_count: 100
+
+backbone: MLPBN
+backbone_dims: [512]
+proj_type: cnn_proj_resnet_with_avg_pool
+cnn_proj_resnet_num_blocks: [2, 2, 2, 2]
+
+loss_function: CrossEntropyLoss
+optimizer_CLS: AdamW
+lr_CLS: 0.001
+weight_decay_CLS: 0.01
+betas_CLS: [0.9, 0.999]
+scheduler_CLS: step
+step_size_CLS: 150
+gamma_CLS: 0.1
+
+num_epochs: 200
+batch_size: 32
+num_workers: 4
+pin_memory: true
+prefetch_factor: 2
+
+save_model: true
+save_after_epoch: 150
+recompute_batchnorm: true
+seed: 42
+port: 12400

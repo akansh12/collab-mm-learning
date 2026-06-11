@@ -1,0 +1,41 @@
+# EuroSAT | centralized joint | all 5 bands (Experiment 1)
+# Band layout: band0=VV, band1=VH, band2=R, band3=G, band4=B
+# Architecture: backbone_blocks=[2], proj_blocks=[2,2,2]  ← NOTE: inverted vs BGE/SEN12MS-all
+dataset: eurosat
+training: joint
+data_root: data/eurosat
+
+model_name: eurosat_joint_all
+wandb_project: collab-mm-learning
+use_wandb: false
+
+modality: [0, 1, 2, 3, 4]
+num_classes: 10
+per_class_count: 100
+
+backbone: cnn_backbone_resnet_groupbn
+cnn_backbone_resnet_num_blocks: [2]
+normalize_backbone: false
+proj_type: cnn_proj_resnet
+cnn_proj_resnet_num_blocks: [2, 2, 2]
+
+loss_function: CrossEntropyLoss
+optimizer_CLS: AdamW
+lr_CLS: 0.001
+weight_decay_CLS: 0.01
+betas_CLS: [0.9, 0.999]
+scheduler_CLS: step
+step_size_CLS: 150
+gamma_CLS: 0.1
+
+num_epochs: 200
+batch_size: 32
+num_workers: 1
+pin_memory: true
+prefetch_factor: 2
+
+save_model: true
+save_after_epoch: 150
+recompute_batchnorm: true
+seed: 42
+port: 12345
