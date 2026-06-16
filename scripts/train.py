@@ -110,6 +110,22 @@ def _run_joint(config):
     mp.spawn(_joint_worker, args=(world_size, config, port), nprocs=world_size, join=True)
 
 
+# ------------------------------------------------------------------ joint_seq (sequential standard-BN, single GPU)
+
+def _run_joint_seq(config):
+    from src.training.joint_seq import MMFLJointSeq
+    from src.utils.utils import setup_seed
+
+    if config["backbone"] != "cnn_backbone_resnet":
+        raise ValueError(
+            "joint_seq mode requires backbone: cnn_backbone_resnet (standard BN). "
+            f"Got: {config['backbone']}"
+        )
+    setup_seed(config.get("seed", 42))
+    trainer = MMFLJointSeq(config)
+    trainer.train()
+
+
 # ------------------------------------------------------------------ fedavg
 
 def _run_fedavg(config):
@@ -136,7 +152,7 @@ def _run_eval(config):
     results, avg_acc = evaluate_test_models(config, device)
     results["average_test_accuracy"] = avg_acc
 
-    out_path = os.path.join(config["experiment_name"], "test_results.json")
+    out_path = os.path.join(config["experiment_name"], config.get("eval_out", "test_results.json"))
     with open(out_path, "w") as f:
         json.dump(results, f, indent=4)
     print(f"Test results → {out_path}")
@@ -164,20 +180,54 @@ def _run_eval(config):
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--config", required=True, help="Path to YAML config file")
+    p.add_argument("--config", required=False, default=None, help="Path to YAML config file (not needed with --eval_only)")
     p.add_argument("--seed", type=int, default=None, help="Override config seed")
     p.add_argument("--exp_dir", type=str, default=None, help="Subdirectory under experiments/ (e.g. baseline_bge)")
     p.add_argument("--no_save", action="store_true", help="Disable model checkpoint saving")
+    p.add_argument("--per_class_count", type=int, default=None, help="Override per_class_count from config")
+    p.add_argument("--bn_calib_split", type=str, default=None, choices=["train", "test"], help="Override BN calibration split (default: train)")
+    p.add_argument("--mod_count_override", type=str, default=None,
+                   help='Per-modality per_class_count, e.g. "s1=50,s2=100"')
+    p.add_argument("--eval_only", type=str, default=None, metavar="EXPERIMENT_DIR",
+                   help="Skip training; re-evaluate existing checkpoints in EXPERIMENT_DIR")
+    p.add_argument("--eval_out", type=str, default="test_results.json",
+                   help="Output filename for eval results (default: test_results.json)")
     return p.parse_args()
 
 
 def main():
     args = parse_args()
+
+    # --eval_only: load config from existing experiment dir, skip training
+    if args.eval_only:
+        with open(os.path.join(args.eval_only, "config.json")) as f:
+            config = json.load(f)
+        config["experiment_name"] = args.eval_only
+        if args.bn_calib_split is not None:
+            config["bn_calib_split"] = args.bn_calib_split
+        config["eval_out"] = args.eval_out
+        _run_eval(config)
+        return
+
+    if args.config is None:
+        print("error: --config is required when not using --eval_only")
+        sys.exit(1)
+
     with open(args.config) as f:
         config = yaml.safe_load(f)
 
     if args.seed is not None:
         config["seed"] = args.seed
+    if args.per_class_count is not None:
+        config["per_class_count"] = args.per_class_count
+    if args.bn_calib_split is not None:
+        config["bn_calib_split"] = args.bn_calib_split
+    if args.mod_count_override is not None:
+        overrides = {}
+        for part in args.mod_count_override.split(","):
+            mod, count = part.strip().split("=")
+            overrides[mod.strip()] = int(count)
+        config["per_class_count_override"] = overrides
     # --no_save: save checkpoints only long enough for eval, then delete them
     delete_after_eval = args.no_save
     setup_seed(config.get("seed", 42))
@@ -197,6 +247,8 @@ def main():
         training = config.get("training", "joint")
         if training == "joint":
             _run_joint(config)
+        elif training == "joint_seq":
+            _run_joint_seq(config)
         elif training == "fedavg":
             _run_fedavg(config)
         else:

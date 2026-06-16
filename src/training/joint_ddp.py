@@ -134,11 +134,17 @@ class MMFLJointDDP:
         self.train_total = torch.zeros(n_total, device=self.device)
         self.train_loss = torch.zeros(n_total, device=self.device)
 
+        # zip (not zip_longest): stops at the shorter loader.
+        # Safe for equal-size case (same length → identical result).
+        # Required for unequal sizes: zip_longest fills exhausted loaders with
+        # None, which crashes the batch unpacking; with multi-GPU DDP it also
+        # deadlocks when ranks have different iteration counts.
+        n_batches_epoch = min(len(l) for l in self.train_loader)
         it = (
-            tqdm(zip_longest(*self.train_loader),
-                 total=self.total_batches // len(self.selected_modalities),
+            tqdm(zip(*self.train_loader),
+                 total=n_batches_epoch,
                  desc=f"Epoch {epoch}", leave=False)
-            if self.rank == 0 else zip_longest(*self.train_loader)
+            if self.rank == 0 else zip(*self.train_loader)
         )
         n_batches = 0
         for batch in it:

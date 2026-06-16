@@ -1,15 +1,15 @@
-# Digits | centralized joint | MNIST + SVHN (Tables 1 & 2)
-dataset: digits
-training: joint
-data_root: data/digits
+# BigEarthNet-MM | FedAvg | S1+S2 | local_epochs=5 (200 total effective epochs)
+dataset: bge
+training: fedavg
+data_root: data/bge
 
-model_name: mnist_svhn_joint
+model_name: bge_fedavg_s1_s2_le5
 wandb_project: collab-mm-learning
 use_wandb: false
 
-modality: [MNIST, SVHN]
-num_classes: 10
-per_class_count: 50
+modality: [s1, s2]
+num_classes: 6
+per_class_count: 100
 
 backbone: cnn_backbone_resnet_groupbn
 cnn_backbone_resnet_num_blocks: [2, 2, 2]
@@ -26,7 +26,8 @@ scheduler_CLS: step
 step_size_CLS: 150
 gamma_CLS: 0.1
 
-num_epochs: 200
+global_rounds: 40
+local_epochs: 5
 batch_size: 32
 num_workers: 4
 pin_memory: true
@@ -36,4 +37,3 @@ save_model: true
 save_after_epoch: 150
 recompute_batchnorm: true
 seed: 42
-port: 12401

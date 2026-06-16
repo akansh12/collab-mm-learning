@@ -1,15 +1,17 @@
-# Digits | centralized joint | MNIST + SVHN (Tables 1 & 2)
-dataset: digits
+# BGE-S2 + Imagenette-6 | joint (Table 2)
+# NOTE: requires imgnette dataset support in src/data/dataloader.py
+dataset: imgnette
 training: joint
-data_root: data/digits
+data_root: data/imgnette
+bge_data_root: data/bge
 
-model_name: mnist_svhn_joint
+model_name: bge_joint_s2_imgnette
 wandb_project: collab-mm-learning
 use_wandb: false
 
-modality: [MNIST, SVHN]
-num_classes: 10
-per_class_count: 50
+modality: [imgnet_6, s2]
+num_classes: 6
+per_class_count: 100
 
 backbone: cnn_backbone_resnet_groupbn
 cnn_backbone_resnet_num_blocks: [2, 2, 2]
@@ -33,7 +35,7 @@ pin_memory: true
 prefetch_factor: 2
 
 save_model: true
-save_after_epoch: 150
+save_after_epoch: 190
 recompute_batchnorm: true
 seed: 42
-port: 12401
+port: 12412

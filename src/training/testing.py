@@ -65,7 +65,7 @@ def evaluate_test_models(config, device, split="test"):
     proj_models = _load_projection_models(config)
 
     # load global backbone (strip DDP 'module.' prefix)
-    if training_mode == "joint":
+    if training_mode in ("joint", "joint_seq"):
         global_backbone = get_backbone_model(config, config["num_classes"])
         sd = torch.load(
             os.path.join(config["experiment_name"], "best_global_backbone_model.pth"),
@@ -87,7 +87,7 @@ def evaluate_test_models(config, device, split="test"):
         )
 
         # per-modality backbone copy
-        if training_mode == "joint":
+        if training_mode in ("joint", "joint_seq"):
             backbone = copy.deepcopy(global_backbone)
         else:  # fedavg — each modality has its own saved backbone
             backbone = get_backbone_model(config, config["num_classes"]).to(device)
@@ -101,11 +101,12 @@ def evaluate_test_models(config, device, split="test"):
         test_loader = get_loader(mod, config, data_type=split, shuffle=False)
 
         if recompute:
-            cal_bs = min(1024, config["per_class_count"] * config["num_classes"])
+            mod_per_class = config.get("per_class_count_override", {}).get(str(mod), config["per_class_count"])
+            cal_bs = min(1024, mod_per_class * config["num_classes"])
             cal_config = {**config, "batch_size": cal_bs}
             replace_gbn_with_bn(backbone)
             replace_gbn_with_bn(proj)
-            cal_loader = get_loader(mod, cal_config, data_type="train", shuffle=True)
+            cal_loader = get_loader(mod, cal_config, data_type=config.get("bn_calib_split", "train"), shuffle=True)
             recompute_batchnorm_running_stats(backbone, proj, cal_loader, device)
 
         loss, acc, macro_f1, weighted_f1 = test_model(device, proj, backbone, test_loader)

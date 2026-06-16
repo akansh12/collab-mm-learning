@@ -1,13 +1,13 @@
-# Digits | centralized joint | MNIST + SVHN (Tables 1 & 2)
+# Digits | unimodal baseline | FashionMNIST only
 dataset: digits
 training: joint
 data_root: data/digits
 
-model_name: mnist_svhn_joint
+model_name: digits_baseline_fmnist
 wandb_project: collab-mm-learning
 use_wandb: false
 
-modality: [MNIST, SVHN]
+modality: [FMNIST]
 num_classes: 10
 per_class_count: 50
 
@@ -33,7 +33,7 @@ pin_memory: true
 prefetch_factor: 2
 
 save_model: true
-save_after_epoch: 150
+save_after_epoch: 190
 recompute_batchnorm: true
 seed: 42
-port: 12401
+port: 12403

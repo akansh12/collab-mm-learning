@@ -1,17 +1,19 @@
-# Digits | centralized joint | MNIST + SVHN (Tables 1 & 2)
-dataset: digits
+# BigEarthNet-MM | BN calibration ablation | S1 + S2
+# Identical to bge_joint_s1_s2.yaml but uses standard BatchNorm (not GroupBN)
+# Purpose: cleanly test no-BN vs BN(train) vs BN(test) for rebuttal (7XmS R2)
+dataset: bge
 training: joint
-data_root: data/digits
+data_root: data/bge
 
-model_name: mnist_svhn_joint
+model_name: bge_bn_ablation_s1_s2
 wandb_project: collab-mm-learning
 use_wandb: false
 
-modality: [MNIST, SVHN]
-num_classes: 10
-per_class_count: 50
+modality: [s1, s2]
+num_classes: 6
+per_class_count: 100
 
-backbone: cnn_backbone_resnet_groupbn
+backbone: cnn_backbone_resnet
 cnn_backbone_resnet_num_blocks: [2, 2, 2]
 normalize_backbone: false
 proj_type: cnn_proj_resnet
@@ -28,12 +30,12 @@ gamma_CLS: 0.1
 
 num_epochs: 200
 batch_size: 32
-num_workers: 4
+num_workers: 1
 pin_memory: true
 prefetch_factor: 2
 
 save_model: true
-save_after_epoch: 150
+save_after_epoch: 190
 recompute_batchnorm: true
 seed: 42
-port: 12401
+port: 12346

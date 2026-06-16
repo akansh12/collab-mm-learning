@@ -11,10 +11,11 @@ modality: [s1, s2]
 num_classes: 6
 per_class_count: 100
 
-backbone: MLPBN
-backbone_dims: [512]
-proj_type: cnn_proj_resnet_with_avg_pool
-cnn_proj_resnet_num_blocks: [2, 2, 2, 2]
+backbone: cnn_backbone_resnet_groupbn
+cnn_backbone_resnet_num_blocks: [2, 2, 2]
+normalize_backbone: false
+proj_type: cnn_proj_resnet
+cnn_proj_resnet_num_blocks: [2]
 
 loss_function: CrossEntropyLoss
 optimizer_CLS: AdamW

@@ -220,6 +220,10 @@ __marimo__/
 # Data (large binary files / symlinks — configure via configs)
 data/
 experiments/
+source-BGE_v1_Jul-main.py_v87/
+source-BGE_v1_Jul-main.py_v89/
+# Third-party library copy (tllib)
+tllib/
 
 # Claude Code
 CLAUDE.md
@@ -231,3 +235,4 @@ logs/
 #TODO: Remove them after we are done
 data_creation/
 analysis/
+

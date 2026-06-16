@@ -1,0 +1,45 @@
+# BigEarthNet-MM | sequential standard-BN | all 14 bands
+# Produces the "Proposed w/o BN calibration" (green) curve from Figure 2.
+#
+# Mechanism: standard BN running stats update after each modality's mini-batch
+# in sequence → stats drift toward the last modality seen each step.
+# At eval with recompute_batchnorm=false, all modalities use these drifted
+# stats → performance degradation that BN calibration (orange curve) fixes.
+dataset: bge
+training: joint_seq
+data_root: data/bge
+
+model_name: bge_joint_all_bands_seq_stdbn
+wandb_project: collab-mm-learning
+use_wandb: false
+
+modality: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+num_classes: 6
+per_class_count: 100
+
+backbone: cnn_backbone_resnet
+cnn_backbone_resnet_num_blocks: [2, 2, 2]
+normalize_backbone: false
+proj_type: cnn_proj_resnet
+cnn_proj_resnet_num_blocks: [2]
+
+loss_function: CrossEntropyLoss
+optimizer_CLS: AdamW
+lr_CLS: 0.001
+weight_decay_CLS: 0.01
+betas_CLS: [0.9, 0.999]
+scheduler_CLS: step
+step_size_CLS: 150
+gamma_CLS: 0.1
+
+num_epochs: 200
+batch_size: 32
+num_workers: 1
+pin_memory: true
+prefetch_factor: 2
+
+save_model: true
+save_after_epoch: 150
+recompute_batchnorm: false
+seed: 42
+port: 12345
